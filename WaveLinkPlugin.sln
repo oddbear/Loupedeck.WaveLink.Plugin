@@ -1,0 +1,25 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30128.74
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WaveLinkPlugin", "WaveLinkPlugin\WaveLinkPlugin.csproj", "{01B4461E-C547-4FEE-BE73-D3563C7BA217}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{01B4461E-C547-4FEE-BE73-D3563C7BA217}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01B4461E-C547-4FEE-BE73-D3563C7BA217}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01B4461E-C547-4FEE-BE73-D3563C7BA217}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01B4461E-C547-4FEE-BE73-D3563C7BA217}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6082DF25-6A8E-4606-A139-EDCDD919A0C4}
+	EndGlobalSection
+EndGlobal
