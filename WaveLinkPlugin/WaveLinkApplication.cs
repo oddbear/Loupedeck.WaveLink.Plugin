@@ -1,7 +1,5 @@
 namespace Loupedeck.WaveLinkPlugin
 {
-    using System;
-
     public class WaveLinkApplication : ClientApplication
     {
         public WaveLinkApplication()
@@ -9,8 +7,8 @@ namespace Loupedeck.WaveLinkPlugin
 
         }
 
-        protected override String GetProcessName() => "";
+        protected override string GetProcessName() => "";
 
-        protected override String GetBundleName() => "";
+        protected override string GetBundleName() => "";
     }
 }

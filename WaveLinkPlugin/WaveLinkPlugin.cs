@@ -1,42 +1,68 @@
+using System;
+using System.Threading.Tasks;
+using ElgatoWaveSDK;
+
 namespace Loupedeck.WaveLinkPlugin
 {
-    using System;
-    using System.Threading.Tasks;
-
-    using ElgatoWaveSDK;
-
     public class WaveLinkPlugin : Plugin
     {
-        public override Boolean UsesApplicationApiOnly => true;
-        public override Boolean HasNoApplication => true;
-
+        public override bool UsesApplicationApiOnly => true;
+        public override bool HasNoApplication => true;
+        
         public ElgatoWaveClient Client;
+
+        public WaveLinkPlugin()
+        {
+            Client = new ElgatoWaveClient();
+        }
 
         public override void Load()
         {
             this.LoadPluginIcons();
+            
+            _ = ConnectAsync();
+        }
+        
+        private async Task ConnectAsync()
+        {
+            try
+            {
+                var connected = await Client.ConnectAsync();
+                if (!connected)
+                    base.OnPluginStatusChanged(Loupedeck.PluginStatus.Warning, "Could not connect to WaveLink.", "https://github.com/oddbear/Loupedeck.WaveLink.Plugin/", "Plugin GitHub page");
+                
+                var monitoringState = await Client.GetMonitoringState();
+                if (monitoringState != null)
+                    Client.OutputMixerChanged?.Invoke(this, monitoringState);
 
-            Client = new ElgatoWaveClient();
-            Client.ConnectAsync(); //true false, connected or not.
+                var mixOutputList = await Client.GetMonitorMixOutputList();
+                if (mixOutputList?.MonitorMix != null)
+                    Client.LocalMonitorOutputChanged?.Invoke(this, mixOutputList.MonitorMix);
+            }
+            catch (Exception)
+            {
+                base.OnPluginStatusChanged(Loupedeck.PluginStatus.Error, "Could not connect to WaveLink.", "https://github.com/oddbear/Loupedeck.WaveLink.Plugin/", "Plugin GitHub page");
+            }
         }
 
         public override void Unload()
         {
+            Client.Disconnect();
         }
-
-        private void OnApplicationStarted(Object sender, EventArgs e)
+        
+        private void OnApplicationStarted(object sender, EventArgs e)
         {
         }
 
-        private void OnApplicationStopped(Object sender, EventArgs e)
+        private void OnApplicationStopped(object sender, EventArgs e)
         {
         }
 
-        public override void RunCommand(String commandName, String parameter)
+        public override void RunCommand(string commandName, string parameter)
         {
         }
 
-        public override void ApplyAdjustment(String adjustmentName, String parameter, Int32 diff)
+        public override void ApplyAdjustment(string adjustmentName, string parameter, int diff)
         {
         }
 

@@ -32,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <OutputPath>..\..\bin\WaveLink\bin\win\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ElgatoWaveSDK">
@@ -52,7 +53,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\TestCommand.cs" />
+    <Compile Include="Adjustments\OutputMonitorMixAdjustment.cs" />
+    <Compile Include="Adjustments\OutputStreamMixAdjustment.cs" />
+    <Compile Include="Commands\SetOutputMonitorMixCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WaveLinkApplication.cs" />
     <Compile Include="WaveLinkPlugin.cs" />
@@ -70,5 +73,6 @@
     <EmbeddedResource Include="Resources\Icons\Icon-32.png" />
     <EmbeddedResource Include="Resources\Icons\Icon-48.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
