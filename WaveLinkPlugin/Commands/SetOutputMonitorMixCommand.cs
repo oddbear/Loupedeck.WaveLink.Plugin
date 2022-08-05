@@ -45,26 +45,6 @@ namespace Loupedeck.WaveLinkPlugin.Commands
             //Needs to update all of them...
             base.ActionImageChanged();
         }
-        
-        //------------------------------------
-        // Command: Get/Set Monitor mix
-        //------------------------------------
-        //var mixType = await client.GetSwitchState();
-        //client.SetMonitoringState(MixType.LocalMix); //Set listen (ear) to local mix
-        //client.SetMonitoringState(MixType.StreamMix); //Set listen (ear) to stream mix
-
-        protected override void RunCommand(string actionParameter)
-        {
-            if (actionParameter is null || !_client.IsConnected)
-                return;
-
-            var monitorMix = actionParameter.Split('|')[1];
-            _monitorMix = _client.SetMonitorMixOutput(monitorMix)
-                .GetAwaiter().GetResult()
-                .MonitorMix;
-
-            base.ActionImageChanged();
-        }
 
         protected override PluginActionParameter[] GetParameters()
         {
@@ -77,7 +57,7 @@ namespace Loupedeck.WaveLinkPlugin.Commands
                 .GetResult()
                 //.MonitorMix //This is the selected one as string.
                 ?.MonitorMixList;
-            
+
             if (monitorMixes is null)
                 return Array.Empty<PluginActionParameter>();
 
@@ -85,6 +65,19 @@ namespace Loupedeck.WaveLinkPlugin.Commands
                 .Select(monitorMix => monitorMix.MonitorMix)
                 .Select(monitorMix => new PluginActionParameter($"monitorMix|{monitorMix}", monitorMix, string.Empty))
                 .ToArray();
+        }
+
+        protected override void RunCommand(string actionParameter)
+        {
+            if (actionParameter is null || !_client.IsConnected)
+                return;
+
+            var monitorMix = actionParameter.Split('|')[1];
+            _monitorMix = _client.SetMonitorMixOutput(monitorMix)
+                .GetAwaiter().GetResult()
+                .MonitorMix;
+
+            base.ActionImageChanged();
         }
         
         protected override BitmapImage GetCommandImage(string actionParameter, PluginImageSize imageSize)

@@ -38,6 +38,16 @@ namespace Loupedeck.WaveLinkPlugin
                 var mixOutputList = await Client.GetMonitorMixOutputList();
                 if (mixOutputList?.MonitorMix != null)
                     Client.LocalMonitorOutputChanged?.Invoke(this, mixOutputList.MonitorMix);
+                
+                var inputMixes = await Client.GetAllChannelInfo();
+                if (inputMixes != null)
+                {
+                    foreach (var channelInfo in inputMixes)
+                    {
+                        Client.InputMixerChanged?.Invoke(this, channelInfo);
+                    }
+                }
+
             }
             catch (Exception)
             {

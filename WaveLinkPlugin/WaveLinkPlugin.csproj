@@ -53,6 +53,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Adjustments\InputMonitorMixAdjustment.cs" />
+    <Compile Include="Adjustments\InputStreamMixAdjustment.cs" />
     <Compile Include="Adjustments\OutputMonitorMixAdjustment.cs" />
     <Compile Include="Adjustments\OutputStreamMixAdjustment.cs" />
     <Compile Include="Commands\SetOutputMonitorMixCommand.cs" />
