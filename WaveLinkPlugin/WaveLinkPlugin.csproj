@@ -69,7 +69,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Commands\checked-80.png" />
     <EmbeddedResource Include="Resources\Icons\Icon-16.png" />
     <EmbeddedResource Include="Resources\Icons\Icon-256.png" />
     <EmbeddedResource Include="Resources\Icons\Icon-32.png" />

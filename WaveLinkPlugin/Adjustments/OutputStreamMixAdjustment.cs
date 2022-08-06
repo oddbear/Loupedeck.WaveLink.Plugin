@@ -11,7 +11,7 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
         private MonitoringState _state;
 
         public OutputStreamMixAdjustment()
-            : base("Stream Mix Volume", "Adjustment for Stream Mix Output Volume and Mute", "Outputs", true, DeviceType.All)
+            : base("Stream Mix Volume", "Adjustment for Stream Mix Output Volume and Mute", "Outputs", true)
         {
             //
         }
@@ -48,7 +48,7 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
             _state.IsStreamOutMuted = !_state.IsStreamOutMuted;
             _state.IsStreamOutMuted = _client.SetOutputMixer(_state)
                 .GetAwaiter().GetResult()
-                .IsStreamOutMuted;
+                ?.IsStreamOutMuted;
             
             base.ActionImageChanged(actionParameter);
         }
@@ -70,7 +70,7 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
             _state.StreamVolumeOut = volume;
             _state.StreamVolumeOut = _client.SetOutputMixer(_state)
                 .GetAwaiter().GetResult()
-                .StreamVolumeOut;
+                ?.StreamVolumeOut;
 
             base.AdjustmentValueChanged(actionParameter);
         }

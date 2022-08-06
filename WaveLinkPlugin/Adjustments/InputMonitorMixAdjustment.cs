@@ -14,7 +14,7 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
         private readonly Dictionary<string, ChannelInfo> _states;
 
         public InputMonitorMixAdjustment()
-            : base(true, DeviceType.All)
+            : base(true)
         {
             this.DisplayName = "Input Monitor Volume";
             this.GroupName = "";

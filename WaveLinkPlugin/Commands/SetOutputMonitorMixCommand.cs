@@ -12,7 +12,6 @@ namespace Loupedeck.WaveLinkPlugin.Commands
         private string _monitorMix;
 
         public SetOutputMonitorMixCommand()
-            : base()
         {
             this.DisplayName = "Switch Monitor Mix";
             this.GroupName = "";
@@ -55,7 +54,6 @@ namespace Loupedeck.WaveLinkPlugin.Commands
             var monitorMixes = _client.GetMonitorMixOutputList()
                 .GetAwaiter()
                 .GetResult()
-                //.MonitorMix //This is the selected one as string.
                 ?.MonitorMixList;
 
             if (monitorMixes is null)
@@ -75,7 +73,7 @@ namespace Loupedeck.WaveLinkPlugin.Commands
             var monitorMix = actionParameter.Split('|')[1];
             _monitorMix = _client.SetMonitorMixOutput(monitorMix)
                 .GetAwaiter().GetResult()
-                .MonitorMix;
+                ?.MonitorMix;
 
             base.ActionImageChanged();
         }
@@ -94,8 +92,7 @@ namespace Loupedeck.WaveLinkPlugin.Commands
                     bitmapBuilder.Clear(new BitmapColor(0x00, 0x4E, 0x00));
                 else
                     bitmapBuilder.Clear(new BitmapColor(0x4E, 0x00, 0x00));
-
-                var text = base.GetCommandDisplayName(actionParameter, imageSize);
+                
                 bitmapBuilder.DrawText(monitorMix);
 
                 return bitmapBuilder.ToImage();

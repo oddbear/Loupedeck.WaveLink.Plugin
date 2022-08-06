@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using ElgatoWaveSDK;
 
@@ -10,6 +11,7 @@ namespace Loupedeck.WaveLinkPlugin
         public override bool HasNoApplication => true;
         
         public ElgatoWaveClient Client;
+        private CancellationTokenSource _cancellationTokenSource;
 
         public WaveLinkPlugin()
         {
@@ -19,55 +21,19 @@ namespace Loupedeck.WaveLinkPlugin
         public override void Load()
         {
             this.LoadPluginIcons();
-            
-            _ = ConnectAsync();
-        }
-        
-        private async Task ConnectAsync()
-        {
-            try
-            {
-                var connected = await Client.ConnectAsync();
-                if (!connected)
-                    base.OnPluginStatusChanged(Loupedeck.PluginStatus.Warning, "Could not connect to WaveLink.", "https://github.com/oddbear/Loupedeck.WaveLink.Plugin/", "Plugin GitHub page");
-                
-                var monitoringState = await Client.GetMonitoringState();
-                if (monitoringState != null)
-                    Client.OutputMixerChanged?.Invoke(this, monitoringState);
 
-                var mixOutputList = await Client.GetMonitorMixOutputList();
-                if (mixOutputList?.MonitorMix != null)
-                    Client.LocalMonitorOutputChanged?.Invoke(this, mixOutputList.MonitorMix);
-                
-                var inputMixes = await Client.GetAllChannelInfo();
-                if (inputMixes != null)
-                {
-                    foreach (var channelInfo in inputMixes)
-                    {
-                        Client.InputMixerChanged?.Invoke(this, channelInfo);
-                    }
-                }
+            _cancellationTokenSource = new CancellationTokenSource();
 
-            }
-            catch (Exception)
-            {
-                base.OnPluginStatusChanged(Loupedeck.PluginStatus.Error, "Could not connect to WaveLink.", "https://github.com/oddbear/Loupedeck.WaveLink.Plugin/", "Plugin GitHub page");
-            }
+            var token = _cancellationTokenSource.Token;
+            _ = Task.Run(() => ConnectAsync(token), token);
         }
 
         public override void Unload()
         {
+            _cancellationTokenSource.Cancel();
             Client.Disconnect();
         }
         
-        private void OnApplicationStarted(object sender, EventArgs e)
-        {
-        }
-
-        private void OnApplicationStopped(object sender, EventArgs e)
-        {
-        }
-
         public override void RunCommand(string commandName, string parameter)
         {
         }
@@ -83,6 +49,59 @@ namespace Loupedeck.WaveLinkPlugin
             this.Info.Icon32x32 = EmbeddedResources.ReadImage("Loupedeck.WaveLinkPlugin.Resources.Icons.Icon-32.png");
             this.Info.Icon48x48 = EmbeddedResources.ReadImage("Loupedeck.WaveLinkPlugin.Resources.Icons.Icon-48.png");
             this.Info.Icon256x256 = EmbeddedResources.ReadImage("Loupedeck.WaveLinkPlugin.Resources.Icons.Icon-256.png");
+        }
+
+        private async Task ConnectAsync(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                try
+                {
+                    if (!Client.IsConnected)
+                        await ConnectAndSetStatusAsync();
+
+                    await UpdateStatesAsync();
+                    await Task.Delay(TimeSpan.FromSeconds(60), cancellationToken);
+                }
+                catch
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                }
+            }
+        }
+
+        private async Task ConnectAndSetStatusAsync()
+        {
+            var connected = await Client.ConnectAsync();
+            if (connected)
+                return;
+
+            base.OnPluginStatusChanged(
+                Loupedeck.PluginStatus.Warning,
+                "Could not connect to WaveLink.",
+                "https://github.com/oddbear/Loupedeck.WaveLink.Plugin/",
+                "Plugin GitHub page");
+        }
+
+        private async Task UpdateStatesAsync()
+        {
+            //Fetch States (should be done periodically, add and replace... or add, remove, replace?):
+            var monitoringState = await Client.GetMonitoringState();
+            if (monitoringState != null)
+                Client.OutputMixerChanged?.Invoke(this, monitoringState);
+
+            var mixOutputList = await Client.GetMonitorMixOutputList();
+            if (mixOutputList?.MonitorMix != null)
+                Client.LocalMonitorOutputChanged?.Invoke(this, mixOutputList.MonitorMix);
+
+            var inputMixes = await Client.GetAllChannelInfo();
+            if (inputMixes != null)
+            {
+                foreach (var channelInfo in inputMixes)
+                {
+                    Client.InputMixerChanged?.Invoke(this, channelInfo);
+                }
+            }
         }
     }
 }
