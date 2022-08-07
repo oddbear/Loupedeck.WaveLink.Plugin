@@ -16,7 +16,6 @@ namespace Loupedeck.WaveLinkPlugin
         private CancellationTokenSource _cancellationTokenSource;
 
         public event EventHandler<IEnumerable<MonitorMixList>> LocalMonitorOutputFetched;
-        public event EventHandler<IEnumerable<ChannelInfo>> AllChannelInfoFetched;
         
         public WaveLinkPlugin()
         {
@@ -98,8 +97,8 @@ namespace Loupedeck.WaveLinkPlugin
             LocalMonitorOutputFetched?.Invoke(this, mixOutputList?.MonitorMixList);
             Client.LocalMonitorOutputChanged?.Invoke(this, mixOutputList?.MonitorMix);
 
-            var inputMixes = await Client.GetAllChannelInfo();
-            AllChannelInfoFetched?.Invoke(this, inputMixes);
+            var channels = await Client.GetAllChannelInfo();
+            Client.ChannelsChanged?.Invoke(this, channels);
         }
     }
 }

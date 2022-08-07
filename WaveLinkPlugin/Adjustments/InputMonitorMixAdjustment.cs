@@ -21,24 +21,23 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
         protected override bool OnLoad()
         {
             _plugin = (WaveLinkPlugin)base.Plugin;
-            _plugin.AllChannelInfoFetched += PluginOnAllChannelInfoFetched;
 
             _client = _plugin.Client;
             _client.InputMixerChanged += InputMixerChanged;
+            _client.ChannelsChanged += ChannelsChanged;
 
             return true;
         }
 
         protected override bool OnUnload()
         {
-            _plugin.AllChannelInfoFetched -= PluginOnAllChannelInfoFetched;
-
             _client.InputMixerChanged -= InputMixerChanged;
+            _client.ChannelsChanged -= ChannelsChanged;
 
             return true;
         }
-
-        private void PluginOnAllChannelInfoFetched(object sender, IEnumerable<ChannelInfo> channels)
+        
+        private void ChannelsChanged(object sender, List<ChannelInfo> channels)
         {
             if (channels is null)
                 return;
