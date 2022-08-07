@@ -11,7 +11,7 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
         private MonitoringState _state;
 
         public OutputStreamMixAdjustment()
-            : base("Stream Mix Volume", "Adjustment for Stream Mix Output Volume and Mute", "Outputs", true)
+            : base("Stream Mix Volume", "Adjustment for Stream Mix Output Volume and Mute", "Output Volume", true)
         {
             //
         }
@@ -35,6 +35,9 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
 
         private void OutputMixerChanged(object sender, MonitoringState state)
         {
+            if (state is null)
+                return;
+
             _state = state;
 
             base.AdjustmentValueChanged();

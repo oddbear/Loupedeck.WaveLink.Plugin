@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ElgatoWaveSDK;
+using ElgatoWaveSDK.Models;
 
 namespace Loupedeck.WaveLinkPlugin
 {
@@ -13,6 +15,9 @@ namespace Loupedeck.WaveLinkPlugin
         public ElgatoWaveClient Client;
         private CancellationTokenSource _cancellationTokenSource;
 
+        public event EventHandler<IEnumerable<MonitorMixList>> LocalMonitorOutputFetched;
+        public event EventHandler<IEnumerable<ChannelInfo>> AllChannelInfoFetched;
+        
         public WaveLinkPlugin()
         {
             Client = new ElgatoWaveClient();
@@ -20,6 +25,7 @@ namespace Loupedeck.WaveLinkPlugin
 
         public override void Load()
         {
+            var x = this.DynamicCommands;
             this.LoadPluginIcons();
 
             _cancellationTokenSource = new CancellationTokenSource();
@@ -85,23 +91,15 @@ namespace Loupedeck.WaveLinkPlugin
 
         private async Task UpdateStatesAsync()
         {
-            //Fetch States (should be done periodically, add and replace... or add, remove, replace?):
             var monitoringState = await Client.GetMonitoringState();
-            if (monitoringState != null)
-                Client.OutputMixerChanged?.Invoke(this, monitoringState);
+            Client.OutputMixerChanged?.Invoke(this, monitoringState);
 
             var mixOutputList = await Client.GetMonitorMixOutputList();
-            if (mixOutputList?.MonitorMix != null)
-                Client.LocalMonitorOutputChanged?.Invoke(this, mixOutputList.MonitorMix);
+            LocalMonitorOutputFetched?.Invoke(this, mixOutputList?.MonitorMixList);
+            Client.LocalMonitorOutputChanged?.Invoke(this, mixOutputList?.MonitorMix);
 
             var inputMixes = await Client.GetAllChannelInfo();
-            if (inputMixes != null)
-            {
-                foreach (var channelInfo in inputMixes)
-                {
-                    Client.InputMixerChanged?.Invoke(this, channelInfo);
-                }
-            }
+            AllChannelInfoFetched?.Invoke(this, inputMixes);
         }
     }
 }

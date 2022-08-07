@@ -1,6 +1,7 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Linq;
 using ElgatoWaveSDK;
+using ElgatoWaveSDK.Models;
 
 namespace Loupedeck.WaveLinkPlugin.Commands
 {
@@ -10,21 +11,13 @@ namespace Loupedeck.WaveLinkPlugin.Commands
         private ElgatoWaveClient _client;
 
         private string _monitorMix;
-
-        public SetOutputMonitorMixCommand()
-        {
-            this.DisplayName = "Switch Monitor Mix";
-            this.GroupName = "";
-            this.Description = "Switch Monitor Mix Output";
-
-            this.MakeProfileAction("list;MonitorMix:");
-        }
-
+        
         protected override bool OnLoad()
         {
             _plugin = (WaveLinkPlugin)base.Plugin;
-            _client = _plugin.Client;
+            _plugin.LocalMonitorOutputFetched += LocalMonitorOutputFetched;
 
+            _client = _plugin.Client;
             _client.LocalMonitorOutputChanged += LocalMonitorOutputChanged;
 
             return true;
@@ -32,46 +25,54 @@ namespace Loupedeck.WaveLinkPlugin.Commands
 
         protected override bool OnUnload()
         {
+            _plugin.LocalMonitorOutputFetched -= LocalMonitorOutputFetched;
+
             _client.LocalMonitorOutputChanged -= LocalMonitorOutputChanged;
 
             return true;
         }
 
+        private void LocalMonitorOutputFetched(object sender, IEnumerable<MonitorMixList> monitorMixList)
+        {
+            if (monitorMixList is null)
+                return;
+            
+            var parameters = base.GetParameters()
+                .Select(parameter => parameter.Name)
+                .ToArray();
+
+            foreach (var monitorMix in monitorMixList)
+            {
+                var monitorMixName = monitorMix.MonitorMix;
+                if (string.IsNullOrWhiteSpace(monitorMixName))
+                    continue;
+
+                if (parameters.Contains(monitorMixName))
+                    continue;
+
+                base.AddParameter(monitorMixName, monitorMixName, "Output Destination");
+            }
+        }
+
         private void LocalMonitorOutputChanged(object sender, string monitorMix)
         {
-            _monitorMix = monitorMix;
+            if (monitorMix is null)
+                return;
 
-            //Needs to update all of them...
+            if (_monitorMix == monitorMix)
+                return;
+
+            _monitorMix = monitorMix;
+            
             base.ActionImageChanged();
         }
-
-        protected override PluginActionParameter[] GetParameters()
-        {
-            if (!_client.IsConnected)
-                return Array.Empty<PluginActionParameter>();
-
-            //TODO: I don't need to fetch this every time I think:
-            var monitorMixes = _client.GetMonitorMixOutputList()
-                .GetAwaiter()
-                .GetResult()
-                ?.MonitorMixList;
-
-            if (monitorMixes is null)
-                return Array.Empty<PluginActionParameter>();
-
-            return monitorMixes
-                .Select(monitorMix => monitorMix.MonitorMix)
-                .Select(monitorMix => new PluginActionParameter($"monitorMix|{monitorMix}", monitorMix, string.Empty))
-                .ToArray();
-        }
-
+        
         protected override void RunCommand(string actionParameter)
         {
             if (actionParameter is null || !_client.IsConnected)
                 return;
-
-            var monitorMix = actionParameter.Split('|')[1];
-            _monitorMix = _client.SetMonitorMixOutput(monitorMix)
+            
+            _monitorMix = _client.SetMonitorMixOutput(actionParameter)
                 .GetAwaiter().GetResult()
                 ?.MonitorMix;
 
@@ -82,9 +83,8 @@ namespace Loupedeck.WaveLinkPlugin.Commands
         {
             if (actionParameter is null || _client.IsConnected != true)
                 return base.GetCommandImage(actionParameter, imageSize);
-
-            var monitorMix = actionParameter.Split('|')[1];
-            var selected = _monitorMix == monitorMix;
+            
+            var selected = _monitorMix == actionParameter;
 
             using (var bitmapBuilder = new BitmapBuilder(imageSize))
             {
@@ -93,7 +93,7 @@ namespace Loupedeck.WaveLinkPlugin.Commands
                 else
                     bitmapBuilder.Clear(new BitmapColor(0x4E, 0x00, 0x00));
                 
-                bitmapBuilder.DrawText(monitorMix);
+                bitmapBuilder.DrawText(actionParameter);
 
                 return bitmapBuilder.ToImage();
             }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using ElgatoWaveSDK;
 using ElgatoWaveSDK.Models;
@@ -16,20 +15,15 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
         public InputMonitorMixAdjustment()
             : base(true)
         {
-            this.DisplayName = "Input Monitor Volume";
-            this.GroupName = "";
-            this.Description = "Input Monitor Volume and mute";
-
-            this.MakeProfileAction("list;Input:");
-
             _states = new Dictionary<string, ChannelInfo>();
         }
 
         protected override bool OnLoad()
         {
             _plugin = (WaveLinkPlugin)base.Plugin;
-            _client = _plugin.Client;
+            _plugin.AllChannelInfoFetched += PluginOnAllChannelInfoFetched;
 
+            _client = _plugin.Client;
             _client.InputMixerChanged += InputMixerChanged;
 
             return true;
@@ -37,9 +31,41 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
 
         protected override bool OnUnload()
         {
+            _plugin.AllChannelInfoFetched -= PluginOnAllChannelInfoFetched;
+
             _client.InputMixerChanged -= InputMixerChanged;
 
             return true;
+        }
+
+        private void PluginOnAllChannelInfoFetched(object sender, IEnumerable<ChannelInfo> channels)
+        {
+            if (channels is null)
+                return;
+
+            var parameters = base.GetParameters()
+                .Select(parameter => parameter.Name)
+                .ToArray();
+
+            foreach (var channelInfo in channels)
+            {
+                if (channelInfo?.MixId is null)
+                    continue;
+
+                if (_states.ContainsKey(channelInfo.MixId))
+                    continue;
+
+                _states[channelInfo.MixId] = channelInfo;
+
+                var monitorMixName = channelInfo.MixId;
+                if (string.IsNullOrWhiteSpace(monitorMixName))
+                    continue;
+
+                if (parameters.Contains(monitorMixName))
+                    continue;
+
+                base.AddParameter(channelInfo.MixId, channelInfo.MixerName, "Input Volume (Monitor)");
+            }
         }
 
         private void InputMixerChanged(object sender, ChannelInfo channelInfo)
@@ -48,27 +74,16 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
                 return;
 
             _states[channelInfo.MixId] = channelInfo;
+
+            base.ActionImageChanged(channelInfo.MixId);
         }
-
-        protected override PluginActionParameter[] GetParameters()
-        {
-            if (!_client.IsConnected)
-                return Array.Empty<PluginActionParameter>();
-
-            return _states.Values
-                .Select(channelInfo => new PluginActionParameter($"inputMonitor|{channelInfo.MixId}", channelInfo.MixerName, string.Empty))
-                .ToArray();
-        }
-
-
+        
         protected override void RunCommand(string actionParameter)
         {
             if (actionParameter is null || !_client.IsConnected)
                 return;
-
-            var mixId = actionParameter.Split('|')[1];
-
-            if(!_states.TryGetValue(mixId, out var inputMix))
+            
+            if(!_states.TryGetValue(actionParameter, out var inputMix))
                 return;
 
             inputMix.IsLocalInMuted = !inputMix.IsLocalInMuted;
@@ -84,9 +99,8 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
         {
             if (actionParameter is null || _states is null)
                 return;
-
-            var mixId = actionParameter.Split('|')[1];
-            if (!_states.TryGetValue(mixId, out var inputMix))
+            
+            if (!_states.TryGetValue(actionParameter, out var inputMix))
                 return;
 
             var volume = inputMix.LocalVolumeIn;
@@ -111,9 +125,8 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
         {
             if (actionParameter is null || _states is null)
                 return "-";
-
-            var mixId = actionParameter.Split('|')[1];
-            if (!_states.TryGetValue(mixId, out var inputMix))
+            
+            if (!_states.TryGetValue(actionParameter, out var inputMix))
                 return "-";
 
             if (inputMix.IsLocalInMuted is true)
