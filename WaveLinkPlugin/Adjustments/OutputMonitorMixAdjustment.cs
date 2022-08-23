@@ -1,12 +1,11 @@
-﻿using ElgatoWaveSDK;
-using ElgatoWaveSDK.Models;
+﻿using ElgatoWaveSDK.Models;
 
 namespace Loupedeck.WaveLinkPlugin.Adjustments
 {
     class OutputMonitorMixAdjustment : PluginDynamicAdjustment
     {
         private WaveLinkPlugin _plugin;
-        private ElgatoWaveClient _client;
+        private WaveLinkClient _client;
 
         private MonitoringState _state;
         
@@ -50,7 +49,6 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
 
             _state.IsLocalOutMuted = !_state.IsLocalOutMuted;
             _state.IsLocalOutMuted = _client.SetOutputMixer(_state)
-                .GetAwaiter().GetResult()
                 ?.IsLocalOutMuted;
 
             base.ActionImageChanged(actionParameter);
@@ -73,7 +71,6 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
 
             _state.LocalVolumeOut = volume;
             _state.LocalVolumeOut = _client.SetOutputMixer(_state)
-                .GetAwaiter().GetResult()
                 ?.LocalVolumeOut;
             
             base.AdjustmentValueChanged(actionParameter);

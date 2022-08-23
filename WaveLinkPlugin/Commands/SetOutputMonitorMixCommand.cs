@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ElgatoWaveSDK;
 using ElgatoWaveSDK.Models;
 
 namespace Loupedeck.WaveLinkPlugin.Commands
@@ -8,16 +7,16 @@ namespace Loupedeck.WaveLinkPlugin.Commands
     class SetOutputMonitorMixCommand : PluginDynamicCommand
     {
         private WaveLinkPlugin _plugin;
-        private ElgatoWaveClient _client;
+        private WaveLinkClient _client;
 
         private string _monitorMix;
         
         protected override bool OnLoad()
         {
             _plugin = (WaveLinkPlugin)base.Plugin;
-            _plugin.LocalMonitorOutputFetched += LocalMonitorOutputFetched;
 
             _client = _plugin.Client;
+            _client.LocalMonitorOutputFetched += LocalMonitorOutputFetched;
             _client.LocalMonitorOutputChanged += LocalMonitorOutputChanged;
 
             return true;
@@ -25,8 +24,7 @@ namespace Loupedeck.WaveLinkPlugin.Commands
 
         protected override bool OnUnload()
         {
-            _plugin.LocalMonitorOutputFetched -= LocalMonitorOutputFetched;
-
+            _client.LocalMonitorOutputFetched -= LocalMonitorOutputFetched;
             _client.LocalMonitorOutputChanged -= LocalMonitorOutputChanged;
 
             return true;
@@ -73,7 +71,6 @@ namespace Loupedeck.WaveLinkPlugin.Commands
                 return;
             
             _monitorMix = _client.SetMonitorMixOutput(actionParameter)
-                .GetAwaiter().GetResult()
                 ?.MonitorMix;
 
             base.ActionImageChanged();

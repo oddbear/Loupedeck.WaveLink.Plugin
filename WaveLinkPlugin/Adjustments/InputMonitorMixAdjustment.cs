@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using ElgatoWaveSDK;
 using ElgatoWaveSDK.Models;
 
 namespace Loupedeck.WaveLinkPlugin.Adjustments
@@ -8,7 +7,7 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
     class InputMonitorMixAdjustment : PluginDynamicAdjustment
     {
         private WaveLinkPlugin _plugin;
-        private ElgatoWaveClient _client;
+        private WaveLinkClient _client;
 
         private readonly Dictionary<string, ChannelInfo> _states;
 
@@ -87,8 +86,6 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
 
             inputMix.IsLocalInMuted = !inputMix.IsLocalInMuted;
             inputMix.IsLocalInMuted = _client.SetInputMixer(inputMix, MixType.LocalMix)
-                .GetAwaiter()
-                .GetResult()
                 ?.IsLocalInMuted;
 
             base.ActionImageChanged();
@@ -114,7 +111,6 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
 
             inputMix.LocalVolumeIn = volume;
             inputMix.LocalVolumeIn = _client.SetInputMixer(inputMix, MixType.LocalMix)
-                .GetAwaiter().GetResult()
                 ?.LocalVolumeIn;
 
             base.AdjustmentValueChanged(actionParameter);
