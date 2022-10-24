@@ -85,8 +85,11 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
                 return;
 
             inputMix.IsLocalInMuted = !inputMix.IsLocalInMuted;
-            inputMix.IsLocalInMuted = _client.SetInputMixer(inputMix, MixType.LocalMix)
+            var result = _client.SetInputMixer(inputMix, MixType.LocalMix)
                 ?.IsLocalInMuted;
+
+            if (result != null)
+                inputMix.IsLocalInMuted = result;
 
             base.ActionImageChanged();
         }
@@ -110,8 +113,11 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
                 volume = 100;
 
             inputMix.LocalVolumeIn = volume;
-            inputMix.LocalVolumeIn = _client.SetInputMixer(inputMix, MixType.LocalMix)
+            var result = _client.SetInputMixer(inputMix, MixType.LocalMix)
                 ?.LocalVolumeIn;
+
+            if (result != null)
+                inputMix.LocalVolumeIn = result;
 
             base.AdjustmentValueChanged(actionParameter);
         }

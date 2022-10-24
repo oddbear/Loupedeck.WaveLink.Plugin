@@ -70,8 +70,11 @@ namespace Loupedeck.WaveLinkPlugin.Commands
             if (actionParameter is null || !_client.IsConnected)
                 return;
             
-            _monitorMix = _client.SetMonitorMixOutput(actionParameter)
+            var result = _client.SetMonitorMixOutput(actionParameter)
                 ?.MonitorMix;
+
+            if (result != null)
+                _monitorMix = result;
 
             base.ActionImageChanged();
         }

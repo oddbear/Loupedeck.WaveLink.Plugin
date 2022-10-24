@@ -48,8 +48,11 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
                 return;
 
             _state.IsLocalOutMuted = !_state.IsLocalOutMuted;
-            _state.IsLocalOutMuted = _client.SetOutputMixer(_state)
+            var result = _client.SetOutputMixer(_state)
                 ?.IsLocalOutMuted;
+
+            if (result != null)
+                _state.IsLocalOutMuted = result;
 
             base.ActionImageChanged(actionParameter);
         }
@@ -70,9 +73,13 @@ namespace Loupedeck.WaveLinkPlugin.Adjustments
                 volume = 100;
 
             _state.LocalVolumeOut = volume;
-            _state.LocalVolumeOut = _client.SetOutputMixer(_state)
+            var result = _client.SetOutputMixer(_state)
                 ?.LocalVolumeOut;
-            
+
+            if (result != null)
+                _state.LocalVolumeOut = result;
+
+
             base.AdjustmentValueChanged(actionParameter);
         }
 
